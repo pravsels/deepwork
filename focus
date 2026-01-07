@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Focus Mode Launcher
+# Just run: ./focus (will prompt for sudo)
+#
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo ""
+    echo "  Focus Mode requires root access to modify system files."
+    echo "  Requesting sudo..."
+    echo ""
+    exec sudo python3 "$SCRIPT_DIR/focus.py" "$@"
+else
+    exec python3 "$SCRIPT_DIR/focus.py" "$@"
+fi

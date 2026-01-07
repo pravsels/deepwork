@@ -1,9 +1,12 @@
+# Distracting websites to block during focus sessions
+# One domain per line, comments start with #
 
 x.com
-mail.google.com
 substack.com
-reddit.com
 linkedin.com
-discord.com 
-
-
+discord.com
+reddit.com
+twitter.com
+facebook.com
+instagram.com
+news.ycombinator.com

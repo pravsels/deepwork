@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blocked - Focus Mode Active</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(229, 62, 62, 0.03) 2px,
+                rgba(229, 62, 62, 0.03) 4px
+            );
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50%); }
+        }
+
+        .container {
+            text-align: center;
+            padding: 3rem;
+            max-width: 650px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .lock-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .lock-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(229, 62, 62, 0.5));
+        }
+
+        .lock-icon .lock-body {
+            fill: #e53e3e;
+            animation: pulse-color 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-color {
+            0%, 100% { fill: #e53e3e; }
+            50% { fill: #fc8181; }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #e53e3e 0%, #fc8181 50%, #e53e3e 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+            100% { background-position: 0% center; }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #a0aec0;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .status-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(229, 62, 62, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-label {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #718096;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #e53e3e;
+        }
+
+        .message {
+            color: #718096;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin: 2rem 0;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e53e3e, transparent);
+            margin: 2rem auto;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #4a5568;
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .quote-author {
+            color: #718096;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            font-style: normal;
+        }
+
+        .escape-hint {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .escape-hint p {
+            font-size: 0.75rem;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        /* Glitch effect on hover */
+        h1:hover {
+            animation: glitch 0.3s ease;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .lock-icon {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="container">
+        <div class="lock-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="lock-body" d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"/>
+                <path d="M7 11V7C7 4.23858 9.23858 2 12 2C14.7614 2 17 4.23858 17 7V11" stroke="#e53e3e" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="16" r="1.5" fill="#0f0f1a"/>
+            </svg>
+        </div>
+
+        <h1>Focus Mode Active</h1>
+
+        <p class="subtitle">
+            This site is blocked to help you stay focused.<br>
+            The block cannot be bypassed.
+        </p>
+
+        <div class="status-box">
+            <div class="status-label">Status</div>
+            <div class="status-value">Deep Work Session in Progress</div>
+        </div>
+
+        <div class="message">
+            You started this focus session because you wanted to do meaningful work.
+            <br><br>
+            Honor that commitment. The urge to check this site will pass.
+            <br>
+            Take a breath and return to what matters.
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="quote">
+            "The ability to perform deep work is becoming increasingly rare
+            at exactly the same time it is becoming increasingly valuable in our economy.
+            As a consequence, the few who cultivate this skill will thrive."
+        </p>
+        <p class="quote-author">Cal Newport, Deep Work</p>
+
+        <div class="escape-hint">
+            <p>
+                This block is enforced at the system level using /etc/hosts, iptables, and file immutability.
+                It will automatically lift when your session ends.
+                The only manual override requires rebooting into recovery mode.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
