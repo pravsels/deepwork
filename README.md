@@ -30,7 +30,7 @@ The only escape is rebooting into recovery mode - enough friction to stop impuls
 ```bash
 # Clone the repo
 git clone <repo-url>
-cd deepwork_with_deepseek
+cd deepwork
 
 # Make executable
 chmod +x focus focus.py
