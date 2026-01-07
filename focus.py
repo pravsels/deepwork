@@ -84,7 +84,7 @@ def print_status_banner(status: dict):
 
         if status['unlock_time']:
             unlock_str = status['unlock_time'].strftime('%H:%M')
-            print(f"    │  Blocking until {Colors.CYAN}{unlock_str}{Colors.RESET}                                  │")
+            print(f"    │  Blocking until {Colors.CYAN}{unlock_str}{Colors.RESET}                               │")
         else:
             print(f"    │  {Colors.DIM}Unlock time unknown{Colors.RESET}                                │")
 
