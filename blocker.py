@@ -313,13 +313,15 @@ class RockSolidBlocker:
 
         # Schedule with systemd-run
         try:
+            # Use absolute time (--on-calendar) to prevent drift if the computer sleeps
+            stamp = unlock_time.strftime("%Y-%m-%d %H:%M:%S")
             self._run_cmd([
                 "systemd-run",
-                "--on-active", f"{int(duration_minutes)}m",
+                "--on-calendar", stamp,
                 "--unit", "deepwork-unblock",
                 "/bin/bash", "-c", unlock_cmd
             ])
-            logger.info(f"Scheduled automatic unlock in {duration_minutes} minutes")
+            logger.info(f"Scheduled automatic unlock at {stamp}")
         except Exception as e:
             logger.warning(f"Could not schedule systemd unlock: {e}")
             logger.info("Falling back to 'at' command")
