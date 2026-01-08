@@ -101,6 +101,7 @@ class RockSolidBlocker:
 
         self.hosts_path = Path("/etc/hosts")
         self.localhost = "127.0.0.1"
+        self.localhost_v6 = "::1"
         self.block_marker_start = "# >>> DEEPWORK BLOCK START - DO NOT EDIT <<<"
         self.block_marker_end = "# >>> DEEPWORK BLOCK END <<<"
         self.iptables_comment = "deepwork-block"
@@ -186,6 +187,7 @@ class RockSolidBlocker:
         filtered_lines.append(self.block_marker_start)
         for domain in sorted(domains):
             filtered_lines.append(f"{self.localhost} {domain}")
+            filtered_lines.append(f"{self.localhost_v6} {domain}")
         filtered_lines.append(self.block_marker_end)
 
         self.hosts_path.write_text('\n'.join(filtered_lines) + '\n')
@@ -268,17 +270,16 @@ class RockSolidBlocker:
     # =========================================================================
 
     def _flush_dns(self) -> None:
-        """Flush DNS cache."""
+        """Flush DNS cache gently."""
         commands = [
-            ["systemctl", "restart", "systemd-resolved"],
             ["resolvectl", "flush-caches"],
-            ["service", "network-manager", "restart"],
+            ["systemctl", "restart", "systemd-resolved"],
         ]
 
         for cmd in commands:
             try:
                 self._run_cmd(cmd, check=False)
-                break
+                logger.debug(f"Executed: {' '.join(cmd)}")
             except Exception:
                 continue
 
@@ -371,8 +372,8 @@ class RockSolidBlocker:
         # Layer 1: Hosts file
         self._add_hosts_entries(expanded_domains)
 
-        # Layer 2: iptables
-        self._add_iptables_rules(expanded_domains)
+        # Layer 2: iptables (Disabled to prevent over-blocking of shared CDN IPs)
+        # self._add_iptables_rules(expanded_domains)
 
         # Layer 3: DNS flush
         self._flush_dns()
@@ -414,7 +415,7 @@ class RockSolidBlocker:
         # Remove hosts entries (also removes immutable flag)
         self._remove_hosts_entries()
 
-        # Remove iptables rules
+        # Remove iptables rules (if any exist from previous runs)
         self._remove_iptables_rules()
 
         # Flush DNS
