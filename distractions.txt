@@ -10,3 +10,5 @@ twitter.com
 facebook.com
 instagram.com
 news.ycombinator.com
+web.whatsapp.com
+mail.google.com
