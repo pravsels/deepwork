@@ -90,7 +90,7 @@ def print_status_banner(status: dict):
 
         print(f"    └─────────────────────────────────────────────────────┘")
     else:
-        print(f"    {Colors.DIM}No active block. Select a duration to start focusing.{Colors.RESET}")
+        print(f"    {Colors.DIM}No active block. Enter a duration to start focusing.{Colors.RESET}")
     print()
 
 
@@ -103,77 +103,60 @@ def print_menu(block_active: bool):
 """)
     else:
         print(f"""
-    {Colors.BOLD}Select a focus session:{Colors.RESET}
-
-    {Colors.GREEN}[1]{Colors.RESET}  Pomodoro       {Colors.DIM}25 minutes{Colors.RESET}
-    {Colors.GREEN}[2]{Colors.RESET}  Short focus    {Colors.DIM}45 minutes{Colors.RESET}
-    {Colors.GREEN}[3]{Colors.RESET}  Deep work      {Colors.DIM}90 minutes{Colors.RESET}
-    {Colors.GREEN}[4]{Colors.RESET}  Long session   {Colors.DIM}2 hours{Colors.RESET}
-    {Colors.GREEN}[5]{Colors.RESET}  Extended       {Colors.DIM}3 hours{Colors.RESET}
-    {Colors.GREEN}[6]{Colors.RESET}  Half day       {Colors.DIM}4 hours{Colors.RESET}
-    {Colors.GREEN}[7]{Colors.RESET}  Full day       {Colors.DIM}8 hours{Colors.RESET}
-    {Colors.YELLOW}[8]{Colors.RESET}  Custom         {Colors.DIM}enter your own duration{Colors.RESET}
+    {Colors.DIM}Examples: 25m, 1h30m, 90m, 1d{Colors.RESET}
 
     {Colors.CYAN}[e]{Colors.RESET}  Edit sites     {Colors.DIM}modify blocked sites list{Colors.RESET}
-
     {Colors.DIM}[q]{Colors.RESET}  Quit
 """)
 
 
-def get_duration_choices():
-    return {
-        '1': ('25m', '25 minutes'),
-        '2': ('45m', '45 minutes'),
-        '3': ('90m', '90 minutes'),
-        '4': ('2h', '2 hours'),
-        '5': ('3h', '3 hours'),
-        '6': ('4h', '4 hours'),
-        '7': ('8h', '8 hours'),
+def get_duration_minutes(duration_str: str) -> float:
+    """Parse time string into minutes. Supports combined formats."""
+    units = {
+        's': 1/60,
+        'm': 1,
+        'h': 60,
+        'd': 1440
     }
+    components = re.findall(r'(\d+(?:\.\d+)?)\s*([smhd])?', duration_str.lower())
+    if not components:
+        return 0.0
+
+    total_minutes = 0.0
+    for number, unit in components:
+        total_minutes += float(number) * units.get(unit, 1)
+    return total_minutes
 
 
-def get_custom_duration():
-    print(f"\n    {Colors.YELLOW}Enter duration:{Colors.RESET}")
-    print(f"    {Colors.DIM}Examples: 30m, 2h, 1d{Colors.RESET}")
-    print()
-
-    try:
-        duration = input(f"    {Colors.BOLD}Duration: {Colors.RESET}").strip()
-        if not duration:
-            return None
-
-        if not re.match(r'^\d+[smhd]?$', duration.lower()):
-            print(f"\n    {Colors.RED}Invalid format. Use: 30m, 2h, 1d, etc.{Colors.RESET}")
-            input(f"\n    {Colors.DIM}Press Enter to continue...{Colors.RESET}")
-            return None
-
-        return duration
-    except KeyboardInterrupt:
-        return None
-
-
-def confirm_block(duration_str: str, duration_display: str) -> bool:
+def confirm_block(duration_str: str) -> bool:
     """Show confirmation before blocking."""
     clear_screen()
     print_header()
 
-    match = re.match(r'^(\d+)([smhd])?$', duration_str.lower())
-    if match:
-        num, unit = match.groups()
-        num = int(num)
-        unit = unit or 'm'
+    minutes = get_duration_minutes(duration_str)
+    if minutes <= 0:
+        print(f"\n    {Colors.RED}Invalid duration format.{Colors.RESET}")
+        input(f"\n    {Colors.DIM}Press Enter to continue...{Colors.RESET}")
+        return False
 
-        multipliers = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
-        seconds = num * multipliers[unit]
-        end_time = datetime.now() + timedelta(seconds=seconds)
-        end_str = end_time.strftime('%H:%M')
+    end_time = datetime.now() + timedelta(minutes=minutes)
+    end_str = end_time.strftime('%H:%M')
+
+    # Format display string for the duration
+    display = duration_str
+    if minutes >= 60:
+        h = int(minutes // 60)
+        m = int(minutes % 60)
+        display = f"{h}h {m}m" if m else f"{h}h"
+    elif minutes >= 1:
+        display = f"{int(minutes)}m"
     else:
-        end_str = "unknown"
+        display = f"{int(minutes*60)}s"
 
     print(f"""
     {Colors.BOLD}Ready to block distractions{Colors.RESET}
 
-    {Colors.CYAN}Duration:{Colors.RESET}  {duration_display}
+    {Colors.CYAN}Duration:{Colors.RESET}  {display} ({duration_str})
     {Colors.CYAN}Until:{Colors.RESET}     {end_str}
 
     {Colors.RED}{Colors.BOLD}WARNING:{Colors.RESET} Once started, you {Colors.RED}CANNOT{Colors.RESET} undo this
@@ -220,8 +203,6 @@ def main():
         print(f"  sudo python3 {sys.argv[0]}\n")
         sys.exit(1)
 
-    durations = get_duration_choices()
-
     while True:
         clear_screen()
         print_header()
@@ -244,28 +225,19 @@ def main():
         if choice == 'q' or choice == '':
             break
 
-        elif status['is_active']:
+        if status['is_active']:
             # Block is active - only quit is valid
             print(f"\n    {Colors.DIM}Block is active. Only [q] to quit.{Colors.RESET}")
             input(f"\n    {Colors.DIM}Press Enter to continue...{Colors.RESET}")
+            continue
 
-        elif choice in durations:
-            duration, display = durations[choice]
-            if confirm_block(duration, display):
-                start_block(duration)
-
-        elif choice == '8':
-            custom = get_custom_duration()
-            if custom:
-                if confirm_block(custom, custom):
-                    start_block(custom)
-
-        elif choice == 'e':
+        if choice == 'e':
             edit_sites()
+            continue
 
-        else:
-            print(f"\n    {Colors.RED}Invalid option{Colors.RESET}")
-            input(f"\n    {Colors.DIM}Press Enter to continue...{Colors.RESET}")
+        # Treat everything else as a duration
+        if confirm_block(choice):
+            start_block(choice)
 
     clear_screen()
     print(f"\n    {Colors.CYAN}Stay focused!{Colors.RESET}\n")

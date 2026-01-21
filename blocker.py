@@ -435,7 +435,7 @@ class RockSolidBlocker:
 
 
 def parse_duration(time_str: str) -> float:
-    """Parse time string into minutes."""
+    """Parse time string into minutes. Supports combined formats like '1h30m'."""
     units = {
         's': 1/60,
         'm': 1,
@@ -443,16 +443,22 @@ def parse_duration(time_str: str) -> float:
         'd': 1440
     }
 
-    match = re.match(r'^(\d+(?:\.\d+)?)([smhd])?$', time_str.lower())
-    if not match:
+    # Find all components (e.g., ['1', 'h'], ['30', 'm'])
+    components = re.findall(r'(\d+(?:\.\d+)?)\s*([smhd])?', time_str.lower())
+
+    if not components:
         raise ValueError(
             "Invalid time format. Use:\n"
             "  - Plain number for minutes: '30'\n"
-            "  - With units: '30s', '45m', '2h', '1d'"
+            "  - With units: '30s', '45m', '2h', '1d'\n"
+            "  - Combined: '1h30m', '1.5h'"
         )
 
-    number, unit = match.groups()
-    return float(number) * units.get(unit, 1)
+    total_minutes = 0.0
+    for number, unit in components:
+        total_minutes += float(number) * units.get(unit, 1)  # Default to minutes if no unit
+
+    return total_minutes
 
 
 def load_domains(file_path: Path) -> Set[str]:
